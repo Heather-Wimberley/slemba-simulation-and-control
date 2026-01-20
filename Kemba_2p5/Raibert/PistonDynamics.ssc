@@ -1,0 +1,102 @@
+component PistonDynamics
+    % Piston Pressure Dynamics
+    % Double-acting pneumatic cylinder model from Javier R. Movellan
+    parameters
+        Ps = {8, 'bar'}; % Supply pressure (gauge)
+        Pe = {1, 'atm'}; % Exhaust pressure
+        Db = {25, 'mm'}; % Bore diameter
+        Dr = {10, 'mm'}; % Rod diameter
+        do = {3, 'mm'}; % Orifice diameter
+        T = {295, 'K'}; % Temperature
+        R = {286.71, 'J/(kg*K)'}; % Specific gas constant
+        c = {0.5, '1'}; % Discharge coefficient
+        Z = {0.99, '1'}; % Gas compressibility Factor
+        k = {1.4, '1'}; % Specific heat ratio
+        td = {6, 'ms'}; % Dead-time
+        l = {70, 'mm'}; % Stroke
+        v1 = {13069, 'mm^3'}; % Extend dead volume
+        v2 = {16084, 'mm^3'}; % Retract dead volume
+        kd = {5, 'N'}; % Dynamic friction
+        kv = {25, 'N*s/m'}; % Viscous damping coefficient
+    end
+
+    annotations
+       [T,R,c,Z,k,v1,v2] : ExternalAccess=none;
+    end
+    
+    variables
+        P1 = {1, 'atm'}; % Pressure (Extend chamber)
+        P2 = {1, 'atm'}; % Pressure (Retract chamber)
+    end
+    
+    inputs
+        ue = {0, '1' } % ue:left
+        ur = {0, '1' } % ur:left
+        x = {0, 'm'} % x:left
+        v = {0, 'm/s' } % v:left
+    end
+    
+    outputs
+        F = {0, 'N' } % F:right
+    end
+    
+    intermediates
+        % lengths
+        x1 = max(min(x, l), 0); % extend chamber
+        x2 = l - max(min(x, l), 0); % retract chamber
+        % valve commands
+        ue_d = delay(ue, td);
+        ur_d = delay(ur, td);
+        % areas
+        A1 = pi*(Db/2)^2; % extend area
+        A2 = pi*((Db/2)^2 - (Dr/2)^2); % retract area
+        a = pi*(do/2)^2;
+        a1s = ue_d*a;
+        a1e = (1-ue_d)*a;
+        a2s = ur_d*a;
+        a2e = (1-ur_d)*a;
+        % volumes
+        V1 = x1*A1 + v1; % extend volume
+        V2 = x2*A2 + v2; % retract volume
+        % constants
+        alpha = c*sqrt((2*k)/(Z*R*T*(k-1)));
+        beta = c*sqrt((k/(Z*R*T))*(2/(k+1))^((k+1)/(k-1)));
+        theta = ((k+1)/2)^(k/(k-1));
+        % mass flow of air
+        dm1 = dm(a1s,Ps,P1,alpha,beta,theta,k) + dm(a1e,Pe,P1,alpha,beta,theta,k);
+        dm2 = dm(a2s,Ps,P2,alpha,beta,theta,k) + dm(a2e,Pe,P2,alpha,beta,theta,k);
+        % forces
+        F1 = P1*A1 - P2*A2;
+        F2 = -(sign(v)*kd + kv*v);
+    end
+    
+    equations
+        % change in chamber pressures
+        P1.der == k*((R*T*dm1 - P1*A1*(+v))/V1);
+        P2.der == k*((R*T*dm2 - P2*A2*(-v))/V2);
+        % output force
+        F == F1 + F2;
+    end
+end
+
+% chocked flow function
+function out = f(Pu,Pd,alpha,beta,theta,k)
+    definitions
+        out = if (Pu/Pd) <= theta
+            alpha*Pu*sqrt(max((Pd/Pu)^(2/k)-(Pd/Pu)^((k+1)/k), 0));
+        else
+            beta*Pu;
+        end
+    end
+end
+
+% mass flow
+function out = dm(a,Pu,Pd,alpha,beta,theta,k)
+    definitions
+        out = if Pu >= Pd
+            a*f(Pu,Pd,alpha,beta,theta,k);
+        else
+           -a*f(Pd,Pu,alpha,beta,theta,k);
+        end
+    end
+end
