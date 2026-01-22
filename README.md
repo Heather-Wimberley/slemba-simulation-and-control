@@ -59,7 +59,7 @@ Once the robot is attached and pressurised, it needs to be checked that all sens
 3. open the file **Physical_SLemba/TestingSensors/TestingSensors.slx**
 4. set all piston inputs to zero and then run it
 5. ensure that robot height is correct and that it moves correctly
-   >Sometimes an integration error occurs where this value changes slowly. To fix this, just unplug the power IMU from the board at the centre of the boom and then replug in the IMU, then power
+   >Sometimes an integration error occurs where this value changes slowly. To fix this, just unplug the power and then the IMU from the board at the centre of the boom and then replug in the IMU, then power
 6. click the green button to zero the motors, cycle motor power, then check that the motor changes value as expected and reads zero in the resting position
 7. check the hall effect sensor position (it should move between 0m and 0.07m) If this is not the case (eg the hall effect sensor was removed and put back on) do the following:
   - move the piston to fully extended and retracted making note of the "raw" value (should be in integer)
