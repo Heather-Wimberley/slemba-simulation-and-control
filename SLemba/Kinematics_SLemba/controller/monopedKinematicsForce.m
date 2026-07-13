@@ -42,18 +42,18 @@ function out = monopedKinematicsForce(time,q,osc_param,uprev,front)
 
     [phi_d,dphi_d,kp,kd,ue,ur,dt_start,state,dx_filtered] = CPG_states_Hopf(time,q,slip,foot_dynamics,y_osc,x_osc,dx_osc,kx,uprev,front);
 
-    % Testing
-    % ----------------------------------------------------------
-    phi_d = pi/2; dphi_d = 0;
-    % ue = 0; ur = 0; kp = 250; kd = 5;
-    ue = 1; ur = 0; kp = 0; kd = 0;
-    % if (foot_dynamics(2)>0)
-    %     ue = 1; ur = 1;
-    % else
-    %     ue = 1; ur = 0;
-    % end
-    dt_start = -100;
-    % ----------------------------------------------------------
+    %% Testing
+    %% ----------------------------------------------------------
+    %phi_d = pi/2; dphi_d = 0;
+    %% ue = 0; ur = 0; kp = 250; kd = 5;
+    %ue = 1; ur = 0; kp = 0; kd = 0;
+    %% if (foot_dynamics(2)>0)
+    %%     ue = 1; ur = 1;
+    %% else
+    %%     ue = 1; ur = 0;
+    %% end
+    %dt_start = -100;
+    %% ----------------------------------------------------------
 
     th_d = max(th_calc(phi_d,l),0);
     if (th_d==0)
@@ -67,7 +67,7 @@ function out = monopedKinematicsForce(time,q,osc_param,uprev,front)
     f = F_calc_dF(Fe,Fr,ue,ur,dl);
     % f = F_calc((time-dt_start),ue,ur,l,dl);
 
-    t = 2;
+    %t = 2;
 
     % % calculate constraint force
     % constraint = constraint_Func(x,y,th,l,thk,tha,dx,dy,dth,dl,dthk,dtha,t,f,grf_t,grf_n,f_end);
